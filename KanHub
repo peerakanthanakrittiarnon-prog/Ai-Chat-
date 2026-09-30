@@ -1,0 +1,31 @@
+```lua
+local ADMIN=123456
+local cd={}
+local function invis(c,on)
+ local h=c:FindFirstChildOfClass("Humanoid");if h then h.DisplayDistanceType=on and 0 or 1 end
+ for _,d in ipairs(c:GetDescendants()) do
+  if d:IsA("BasePart") or d:IsA("Decal") then d.Transparency=on and 1 or 0 end
+ end
+end
+game.Players.PlayerAdded:Connect(function(p)
+ p:SetAttribute("Inv",false);p:SetAttribute("Inf",false)
+ p.Chatted:Connect(function(m)
+  if p.UserId~=ADMIN then return end
+  local a,b=m:match("^/(%w+)%s+(%w+)$");b=(b=="on")
+  if a=="inv" then p:SetAttribute("Inv",b); if p.Character then invis(p.Character,b) end end
+  if a=="inf" then p:SetAttribute("Inf",b) end
+ end)
+ p.CharacterAdded:Connect(function(c) invis(c,p:GetAttribute("Inv")==true) end)
+end)
+function CanCast(p,skill,sec)
+ if p:GetAttribute("Inf") then return true end
+ cd[p]=cd[p] or {}; local t=os.clock()
+ if t-(cd[p][skill] or 0)<sec then return false end
+ cd[p][skill]=t; return true
+end
+function SkillDamage(targetHum,dmg)
+ local pl=game.Players:GetPlayerFromCharacter(targetHum.Parent)
+ if pl and pl:GetAttribute("Inv") then return end
+ targetHum:TakeDamage(dmg)
+end
+```
